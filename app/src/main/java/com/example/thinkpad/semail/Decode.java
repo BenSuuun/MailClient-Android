@@ -14,7 +14,8 @@ public class Decode {
 	public String decodes(String type, String encoded_text) throws UnknownHostException, IOException{
         Base64 base64 = new Base64();
         byte[] b;
-        b = base64.decode(encoded_text);
+		System.out.println(encoded_text);
+        b = base64.decode(encoded_text.getBytes());
         String s = new String(b, type);
         return s;
     }

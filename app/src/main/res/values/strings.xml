@@ -13,6 +13,8 @@
     <string name="write_send">SEND</string>
     <string name="receive_sender">Sender</string>
     <string name="receive_title">Title</string>
+    <drawable name="clr_normal">@color/purple_xiaohui</drawable>
+    <drawable name="clr_pressed">#a44100</drawable>
 
 
 </resources>

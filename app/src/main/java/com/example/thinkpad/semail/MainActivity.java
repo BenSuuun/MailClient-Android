@@ -11,7 +11,6 @@ import android.view.MenuItem;
 
 import android.app.Activity;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -43,15 +42,7 @@ public class MainActivity extends Activity {
     }
 
     public void login(View view){
-
-        if(username.getText().toString().equals("admin") &&
-                password.getText().toString().equals("admin")) {
-            Toast.makeText(getApplicationContext(), "Redirecting...",
-                    Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, WriteEmailActivity.class);
-            startActivity(intent);
-        }
-
+        login.setText("Please waiting...");
         String server="pop3.sem.tsinghua.edu.cn";//POP3服务器地址
         String result;
         String input_string;
@@ -68,19 +59,22 @@ public class MainActivity extends Activity {
                 System.out.println(result);
                 if ("SUCCESS".equals(result))
                 {
-                    Toast.makeText(getApplicationContext(), "Redirecting...",
+                    Toast.makeText(getApplicationContext(), "Login Successfully...",
                             Toast.LENGTH_SHORT).show();
                     Bundle bundle = new Bundle();
                     bundle.putString("user", username.getText().toString());
                     bundle.putString("pass", password.getText().toString());
-                    Intent intent = new Intent(MainActivity.this, WriteEmailActivity.class);
+                    bundle.putString("no", "1");
+                    Intent intent = new Intent(MainActivity.this, MyListView4.class);
                     intent.putExtras(bundle);
                     startActivity(intent);
                 }
                 else
                 {
+
                     Toast.makeText(getApplicationContext(), "Wrong Password",
                             Toast.LENGTH_SHORT).show();
+                    login.setText("Please waiting...");
                 }
             }
             else

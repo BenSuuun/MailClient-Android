@@ -12,11 +12,16 @@
     android:id="@+id/main">
 
     <ImageView
+        android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imageView"
-        android:src= "@drawable/sem_logo"
-        android:layout_alignParentStart="true" />
+        android:layout_alignEnd="@+id/line"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="70dp"
+        android:layout_marginTop="30dp"
+        android:adjustViewBounds="true"
+        android:cropToPadding="true"
+        android:src="@drawable/tsinghuasem" />
 
     <View
         android:layout_width="fill_parent"
@@ -40,22 +45,20 @@
         android:id="@+id/editText1"
         android:layout_width="310px"
         android:layout_height="wrap_content"
-        android:ems="10"
         android:layout_below="@+id/line"
-        android:layout_toEndOf="@+id/imagePassword"
         android:layout_marginBottom="27dp"
-
-        />
+        android:layout_toEndOf="@+id/imagePassword"
+        android:textColor="@color/blue_ziti" />
 
     <TextView
+        android:id="@+id/email"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/email"
-        android:text="@string/email"
-        android:textColor="@color/light_blue"
-        android:textSize="17dp"
         android:layout_alignBottom="@+id/imageUser"
-        android:layout_alignEnd="@+id/line" />
+        android:layout_alignEnd="@+id/line"
+        android:text="@string/email"
+        android:textColor="@color/purple_xiaohui"
+        android:textSize="17dp" />
 
     <ImageView
         android:layout_width="wrap_content"
@@ -68,27 +71,31 @@
 
     <EditText
         android:id="@+id/editText2"
-        android:inputType="textPassword"
-        android:layout_width="wrap_content"
+        android:layout_width="600dp"
         android:layout_height="wrap_content"
-        android:ems="10"
         android:layout_below="@+id/editText1"
-        android:layout_alignStart="@+id/editText1"
-        android:layout_alignEnd="@+id/email">
-        android:hint="密码"
+        android:layout_toEndOf="@+id/imagePassword"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="false"
+        android:textColor="@color/blue_ziti">
+
         <requestFocus />
     </EditText>
 
     <Button
         android:id="@+id/button1"
-        android:textColor="@color/purple"
-
         android:layout_width="match_parent"
+
         android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/imageView"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/button_selector"
+        android:elevation="0dp"
+        android:fontFamily="sans-serif"
         android:onClick="login"
         android:text="@string/Login"
-        android:layout_alignParentBottom="true"
-        android:layout_alignEnd="@+id/imageView"
-        android:layout_marginBottom="16dp" />
+        android:textColor="@android:color/background_light"
+        android:textSize="18sp" />
 
 </RelativeLayout>
