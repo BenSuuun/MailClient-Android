@@ -18,6 +18,13 @@ public class Pop {
 	BufferedReader in;
 	BufferedWriter out;
 	/*public static void main(String[] args) throws UnknownHostException, IOException {
+		String test= "Content-Type: multipart/alternative; BOUNDARY=\"=_Part_854971_716788961.1510304382627\"";
+		String ta[];
+		ta = test.split("[: ;]");
+		for (int i = 0; i < ta.length; i++)
+		{
+			System.out.println(ta[i]);
+		}
 		String server="pop3.sem.tsinghua.edu.cn";//POP3服务器地址
 		String user="";//用户名，填写自己的邮箱用户名
 		String password="";//密码，填写自己的密码
@@ -29,9 +36,10 @@ public class Pop {
 		System.out.println(result);
 		result = pop3Client.input("STAT");
 		System.out.println(result);
-		result = pop3Client.input("RETR 2166");
+		result = pop3Client.input("RETR 2174");
 		System.out.println(result);
 		//pop3Client.recieveMail(user, password);
+
 	}*/
 	/*构造函数*/
 	public Pop(String server,int port) {
@@ -40,7 +48,7 @@ public class Pop {
 			in =new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			out =new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 		}catch(Exception e){
-            System.out.println("here1");
+			System.out.println("here1");
 			e.printStackTrace();
 		}finally{
 			System.out.println("建立连接！");
@@ -95,77 +103,11 @@ public class Pop {
 
 		}
 		catch(Exception e){
-            System.out.println("here2");
+			System.out.println("here2");
 			e.printStackTrace();
 			return "ERROR";
 		}
 	}
-	/*public boolean recieveMail(String user,String password){  //调试使用该段落
-		try {
-			BufferedReader in=new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			BufferedWriter out=new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-			String user_input="";
-			String operation, v1, v2, v3;
-			InputStreamReader ir = new InputStreamReader(System.in);
-			BufferedReader br = new BufferedReader(ir);
-			System.out.println("输入您的操作：");
-			user_input = br.readLine();
-			while (user_input != null)
-			{
-				System.out.println("已读入："+user_input);
-				StringTokenizer st=new StringTokenizer(user_input," ");
-				operation = st.nextToken();
-				if ("USER".equalsIgnoreCase(operation))
-				{
-					v1 = st.nextToken();
-					user(v1, in, out);
-				}
-				else if ("PASS".equalsIgnoreCase(operation))
-				{
-					v1 = st.nextToken();
-					pass(v1, in, out);
-				}
-				else if ("STAT".equalsIgnoreCase(operation))
-				{
-					stat(in, out);
-				}
-				else if ("LIST".equalsIgnoreCase(operation))
-				{
-					if(st.hasMoreTokens())
-					{
-						v1 = st.nextToken();
-						list_one(Integer.parseInt(v1), in, out);
-					}
-					else
-					{
-						list(in, out);
-					}
-				}
-				else if ("RETR".equalsIgnoreCase(operation))
-				{
-					v1 = st.nextToken();
-					retr(Integer.parseInt(v1), in, out);
-
-				}
-				else if ("QUIT".equalsIgnoreCase(operation))
-				{
-					quit(in, out);
-				}
-				else
-				{
-					System.out.println(operation);
-					System.out.println("错误的指令,请重试");
-				}
-				user_input = br.readLine();
-			}
-			ir.close();
-			br.close();
-		}catch(Exception e){
-			e.printStackTrace();
-			return false;
-		}
-		return true;
-	}*/
 	//得到服务器返回的一行命令
 	public String getReturn(BufferedReader in){
 		String line="";
@@ -175,7 +117,7 @@ public class Pop {
 				System.out.println("服务器返回状态:"+line);
 			}
 		}catch(Exception e){
-            System.out.println("here3");
+			System.out.println("here3");
 			e.printStackTrace();
 		}
 		return line;
@@ -198,7 +140,7 @@ public class Pop {
 		}
 		catch (Exception e)
 		{
-            System.out.println("here4");
+			System.out.println("here4");
 			return ("ERROR ERROR");
 		}
 	}
@@ -285,18 +227,26 @@ public class Pop {
 	}
 	public String getMessagedetail(BufferedReader in) throws UnsupportedEncodingException{
 		String message = "";
+		String message_plain = "";
 		int read_line=0;
-		String line = null, s1 = null, s2 = null, charset = null, s3 = null;
-		String m_date = "",m_from="",m_subject="";
+		String line = null, s1 = null, s2 = null, charset = "Loading", s3 = null;
+		String m_date = "Loading...",m_from="Loading...",m_subject="Loading...";
 		String[] res,res_g;
-		int read_num=0;
+		String boundary = "";
+		String end_boundary;
+		String general_type = "";
+		int read_num=0, read_date=0;
 		Decode decoding_b64 = new Decode();
 		QuotedPrintableCodec decoding_qp = new QuotedPrintableCodec();
 		try{
 			line=in.readLine().toString();
-			while (read_num<3)
+			while (read_num+read_date < 4)
 			{
-				//System.out.println(line);
+				if (".".equalsIgnoreCase(line))
+				{
+					break;
+				}
+				System.out.println(line);
 				res_g = line.split("[:| ]");
 				if ("Date".equalsIgnoreCase(res_g[0]))
 				{
@@ -304,7 +254,7 @@ public class Pop {
 						m_date = line.substring(6);
 					else
 						m_date = line.substring(5);
-					read_num ++;
+					read_date = 1;
 					//System.out.println(m_date);
 					line=in.readLine().toString();
 					continue;
@@ -312,6 +262,13 @@ public class Pop {
 				else if ("From".equalsIgnoreCase(res_g[0]))
 				{
 					res = line.split("\\<");
+					if (res.length == 1)
+					{
+						m_from = res_g[res_g.length-1];
+						read_num++;
+						line=in.readLine().toString();
+						continue;
+					}
 					res = res[1].split("\\>");
 					m_from = res[0];
 					read_num++;
@@ -326,16 +283,19 @@ public class Pop {
 					{
 						s2 = decoding_b64.decodes(res[1], res[3]);
 						line=in.readLine().toString();
-						s1 = line.substring(0,1);
-						while(" ".equalsIgnoreCase(s1)){
-							res = line.split("\\?");
-							s2 = s2 + decoding_b64.decodes(res[1], res[3]);
-							line=in.readLine().toString();
+						if (line.length()>=1)
+						{
 							s1 = line.substring(0,1);
+							while(" ".equalsIgnoreCase(s1)){
+								res = line.split("\\?");
+								s2 = s2 + decoding_b64.decodes(res[1], res[3]);
+								line=in.readLine().toString();
+								s1 = line.substring(0,1);
+							}
 						}
 						m_subject = s2;
 						read_num++;
-						//System.out.println(m_subject);
+						line=in.readLine().toString();
 						continue;
 					}
 					else
@@ -350,53 +310,77 @@ public class Pop {
 							}
 					}
 				}
+
+				else if ("Content-Type".equalsIgnoreCase(res_g[0]))
+				{
+					res = line.split("[: ;]");
+					for (int l = 1; l < res.length; l++)
+						if (res[l].length()>= 5)
+						{
+							general_type = res[l];
+							read_num ++;
+							if (res.length - l <= 2)
+							{
+								line=in.readLine().toString();
+								System.out.println(line);
+							}
+							break;
+						}
+					res = line.split("\"");
+					/*for (int l = 0; l < res.length; l++)
+					{
+						System.out.println(res[l]);
+					}*/
+					if (res.length > 1)
+					{
+						for (int l = 1; l < res.length; l++)
+							if (res[l].length()>= 5)
+							{
+								boundary = res[l];
+								break;
+							}
+					}
+				}
 				line=in.readLine().toString();
 			}
-            
-            
-            
-            /*
-            s1 = line.substring(0,5);
-            while(!"Date:".equalsIgnoreCase(s1)){                   
-                line=in.readLine().toString(); 
-                s1 = line.substring(0,5);
-            }
-            message = line.substring(5)+"\r";
-            line=in.readLine().toString(); 
-            s1 = line.substring(0,5);
-            while(!"From:".equalsIgnoreCase(s1)){                   
-                line=in.readLine().toString();   
-                s1 = line.substring(0,5);
-            }
-            res = line.split("\\<");
-            res = res[1].split("\\>");    
-            message = message+res[0]+"\r";
-            line=in.readLine().toString(); 
-            s1 = line.substring(0,8);
-            while(!"Subject:".equalsIgnoreCase(s1)){                   
-                line=in.readLine().toString();   
-                s1 = line.substring(0,8);
-            }            
-            res = line.split("\\?");
-            s2 = decoding_b64.decodes(res[1], res[3]);
-            line=in.readLine().toString(); 
-            s1 = line.substring(0,1);
-            System.out.println(message);	
-            while(" ".equalsIgnoreCase(s1)){ 
-                res = line.split("\\?");
-                s2 = s2 + decoding_b64.decodes(res[1], res[3]);            	
-                line=in.readLine().toString();  
-                s1 = line.substring(0,1);
-            }            
-            message = message+s2+"\r";  
-            System.out.println(message);	
-            */
-			message = message + m_date + "\r" + m_from + "\r" + m_subject + "\r";
+			boundary = "--"+boundary;
+			end_boundary = boundary+"--";
+			System.out.println(boundary);
+			System.out.println(general_type);
+			message = message + m_date + "\n" + m_from + "\n" + m_subject + "\n";
+			message_plain = message_plain + m_date + "\n" + m_from + "\n" + m_subject + "\n";
+			res = general_type.split("/");
+			if (!"multipart".equalsIgnoreCase(res[0]))
+			{
+				message = message + "base64\nUTF-8\n";
+				message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+				return message;
+			}
 			System.out.println(message);
 			while (!".".equalsIgnoreCase(line))
 			{
+				if (".".equalsIgnoreCase(line))
+				{
+					message = message + "base64\nUTF-8\n";
+					message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+					return message;
+				}
 				line=in.readLine().toString();
-				if (line.length()>=2)
+				System.out.println("begin:"+line);
+				if (".".equalsIgnoreCase(line))
+				{
+					message = message + "base64\nUTF-8\n";
+					message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+					return message;
+				}
+				while (!boundary.equalsIgnoreCase(line) && !end_boundary.equalsIgnoreCase(line))
+				{
+					//System.out.println(line);
+					line=in.readLine().toString();
+					if (".".equalsIgnoreCase(line))
+						break;
+				}
+				/*if (line.length()>=2)
 					s1 = line.substring(0,2);
 				else
 					s1 = null;
@@ -406,10 +390,22 @@ public class Pop {
 						s1 = line.substring(0,2);
 					else
 						s1 = null;
+				}*/
+				if (".".equalsIgnoreCase(line))
+				{
+					message = message + "base64\nUTF-8\n";
+					message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+					return message;
 				}
 				line=in.readLine().toString();
+				if (".".equalsIgnoreCase(line))
+				{
+					message = message + "base64\nUTF-8\n";
+					message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+					return message;
+				}
 				res_g = line.split("[:|;|=| |\"]"); //正则表达式取出type 和 charset
-				// System.out.println(line);
+				System.out.println(line);
 				for (int i= 0 ; i< res_g.length; i++)
 					if ("text/html".equalsIgnoreCase(res_g[i]))
 					{
@@ -420,28 +416,85 @@ public class Pop {
 								charset = res_g[j];
 								break;
 							}
+						int charset_flag = 0;
+						for (int j = res_g.length-1; j >= 0; j --)
+							if ("charset".equalsIgnoreCase(res_g[j]))
+							{
+								charset_flag = 1;
+								break;
+							}
+						if (charset_flag == 0)
+						{
+							if (".".equalsIgnoreCase(line))
+							{
+								message = message + "base64\nUTF-8\n";
+								message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+								return message;
+							}
+							line=in.readLine().toString();
+							res = line.split("[:|;|=| |\"]");
+							for (int j = res.length-1; j >= i; j --)
+								if (res[j].length()>=3)
+								{
+									charset = res[j];
+									break;
+								}
+						}
 						System.out.println(charset);
 						s1 = "";
+						if (".".equalsIgnoreCase(line))
+						{
+							message = message + "base64\nUTF-8\n";
+							message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+							return message;
+						}
+						if (".".equalsIgnoreCase(line))
+						{
+							message = message + "base64\nUTF-8\n";
+							message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+							return message;
+						}
 						line=in.readLine().toString();
 						res = line.split("[:| ]");
 						while (!"Content-Transfer-Encoding".equalsIgnoreCase(res[0]))
 						{
+							if (".".equalsIgnoreCase(line))
+							{
+								message = message + "base64\nUTF-8\n";
+								message = message + decoding_qp.decode("Loading...", "UTF-8")+"\n";
+								return message;
+							}
 							line=in.readLine().toString();
 							res = line.split("[:| ]");
 							if (".".equalsIgnoreCase(s2))
 								break;
 						}
+						int read_line_num = 0;
 						for (int k = 0; k< res.length;k++)
 							if ("quoted-printable".equalsIgnoreCase(res[k]))
 							{
 								line=in.readLine().toString();
+								while (!boundary.equalsIgnoreCase(line) && !end_boundary.equalsIgnoreCase(line))
+								{
+									s1 = s1 + line + "\n";
+									line=in.readLine().toString();
+									read_line_num ++;
+									if (read_line_num > 1000)
+									{
+										message = "Loading...\nLoading...\nLoading...\n";
+										break;
+									}
+									if (".".equalsIgnoreCase(line))
+										break;
+								}
+								/*
 								if (line.length()>=2)
 									s2 = line.substring(0,2);
 								else
 									s2 = null;
 								while (!"--".equalsIgnoreCase(s2))
 								{
-									s1 = s1 + line + "\r";
+									s1 = s1 + line + "\n";
 									line=in.readLine().toString();
 									if (line.length()>=2)
 										s2 = line.substring(0,2);
@@ -449,14 +502,27 @@ public class Pop {
 										s2 = null;
 									if (".".equalsIgnoreCase(s2))
 										break;
-								}
-								message = message + res_g[i] + "\r" + charset + "\r";
-								message = message + decoding_qp.decode(s1, charset)+"\r";
+								}*/
+								message = message + res_g[i] + "\n" + charset + "\n";
+								System.out.println(s1);
+								//byte[] s1_b = s1.getBytes(charset);
+								message = message + decoding_qp.decode(s1, charset)+"\n";
+								System.out.println(message);
 								return message;
 							}
 							else if ("base64".equalsIgnoreCase(res[k]))
 							{
 								line=in.readLine().toString();
+								while (!boundary.equalsIgnoreCase(line) && !end_boundary.equalsIgnoreCase(line))
+								{
+									s1 = s1 + line;
+									line=in.readLine().toString();
+									if (".".equalsIgnoreCase(line))
+										break;
+								}
+								/*
+								line=in.readLine().toString();
+
 								if (line.length()>=2)
 									s2 = line.substring(0,2);
 								else
@@ -471,13 +537,14 @@ public class Pop {
 										s2 = null;
 									if (".".equalsIgnoreCase(s2))
 										break;
-								}
-								message = message + res_g[i] + "\r" + charset + "\r";
-								message = message + decoding_b64.decodes(charset, s1)+"\r";
+								}*/
+								message = message + res_g[i] + "\n" + charset + "\n";
+								message = message + decoding_b64.decodes(charset, s1)+"\n";
+								System.out.println(message);
 								return message;
 							}
 					}
-					else if ("text/plain-waiting".equalsIgnoreCase(res_g[i])) //
+					else if ("text/plain_wait".equalsIgnoreCase(res_g[i])) //
 					{
 						for (int j = res_g.length-1; j >= i; j --)
 							if (res_g[j].length()>=3)
@@ -485,6 +552,24 @@ public class Pop {
 								charset = res_g[j];
 								break;
 							}
+						int charset_flag = 0;
+						for (int j = res_g.length-1; j >= 0; j --)
+							if ("charset".equalsIgnoreCase(res_g[j]))
+							{
+								charset_flag = 1;
+								break;
+							}
+						if (charset_flag == 0)
+						{
+							line=in.readLine().toString();
+							res = line.split("[:|;|=| |\"]");
+							for (int j = res.length-1; j >= i; j --)
+								if (res[j].length()>=3)
+								{
+									charset = res[j];
+									break;
+								}
+						}
 						System.out.println(charset);
 						s1 = "";
 						line=in.readLine().toString();
@@ -501,13 +586,24 @@ public class Pop {
 							if ("quoted-printable".equalsIgnoreCase(res[k]))
 							{
 								line=in.readLine().toString();
+								while (!boundary.equalsIgnoreCase(line) && !end_boundary.equalsIgnoreCase(line))
+								{
+									s1 = s1 + line + "\n";
+									System.out.println(line);
+									line=in.readLine().toString();
+									if (".".equalsIgnoreCase(line))
+										break;
+								}
+								/*
+								line=in.readLine().toString();
 								if (line.length()>=2)
 									s2 = line.substring(0,2);
 								else
 									s2 = null;
 								while (!"--".equalsIgnoreCase(s2))
 								{
-									s1 = s1 + line + "\r";
+
+									s1 = s1 + line + "\n";
 									line=in.readLine().toString();
 									if (line.length()>=2)
 										s2 = line.substring(0,2);
@@ -515,13 +611,25 @@ public class Pop {
 										s2 = null;
 									if (".".equalsIgnoreCase(s2))
 										break;
-								}
-								message = message + res_g[i] + "\r" + charset + "\r";
-								message = message + decoding_qp.decode(s1, charset)+"\r";
-								return message;
+								}*/
+								message_plain = message_plain + res_g[i] + "\n" + charset + "\n";
+								message_plain = message_plain + decoding_qp.decode(s1, charset)+"\n";
+								//return message_plain;
 							}
 							else if ("base64".equalsIgnoreCase(res[k]))
 							{
+
+								line=in.readLine().toString();
+								System.out.println(line);
+								while (!boundary.equalsIgnoreCase(line) && !end_boundary.equalsIgnoreCase(line))
+								{
+									s1 = s1 + line;
+									line=in.readLine().toString();
+									System.out.println(line);
+									if (".".equalsIgnoreCase(line))
+										break;
+								}
+								/*
 								line=in.readLine().toString();
 								if (line.length()>=2)
 									s2 = line.substring(0,2);
@@ -537,29 +645,53 @@ public class Pop {
 										s2 = null;
 									if (".".equalsIgnoreCase(s2))
 										break;
-								}
-								message = message + res_g[i] + "\r" + charset + "\r";
-								message = message + decoding_b64.decodes(charset, s1)+"\r";
-								return message;
+								}*/
+								message_plain = message_plain + res_g[i] + "\n" + charset + "\n";
+								message_plain = message_plain + decoding_b64.decodes(charset, s1)+"\n";
+								//return message_plain;
 							}
 					}
+					else if ("multipart/alternative".equalsIgnoreCase(res_g[i]) || "multipart/related".equalsIgnoreCase(res_g[i]))
+					{
+						res = line.split("[: ;]");
+						for (int l = 1; l < res.length; l++)
+							if (res[l].length()>= 5)
+							{
+								general_type = res[l];
+								read_num ++;
+								if (res.length - l <= 2)
+								{
+									line=in.readLine().toString();
+									System.out.println(line);
+								}
+								break;
+							}
+						res = line.split("\"");
+						/*for (int l = 0; l < res.length; l++)
+						{
+							System.out.println(res[l]);
+						}*/
+						if (res.length > 1)
+						{
+							for (int l = 1; l < res.length; l++)
+								if (res[l].length()>= 5)
+								{
+									boundary = res[l];
+									boundary = "--"+boundary;
+									end_boundary = boundary+"--";
+									System.out.println("new_boundary"+boundary);
+									break;
+								}
+						}
+					}
+
 			}
 		}catch(Exception e){
 			e.printStackTrace();
+			//return (message_plain);
 		}
 
-		return ("ERROR\r"+message);
-        /*
-        try{
-            line=in.readLine().toString(); 
-            while(!".".equalsIgnoreCase(line)){   
-                message=message+line+"\r";   
-                line=in.readLine().toString();
-            }
-        }catch(Exception e){  
-            e.printStackTrace();
-        }
-            return message;*/
+		return (message+"Loading...");
 	}
 	//retr命令
 	public String retr(int mailNum,BufferedReader in,BufferedWriter out) throws IOException, InterruptedException{
@@ -569,11 +701,8 @@ public class Pop {
 			throw new IOException("接收邮件出错!");
 		}
 		return getMessagedetail(in);
-		//return getMessage(in);
-           /* System.out.println("第"+mailNum+"封");
-            System.out.println(getMessagedetail(in));
-            Thread.sleep(3000);*/
 	}
+
 	//退出
 	public String quit(BufferedReader in,BufferedWriter out) throws IOException{
 		String result;

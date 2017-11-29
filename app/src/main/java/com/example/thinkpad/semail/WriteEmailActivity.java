@@ -39,63 +39,57 @@ public class WriteEmailActivity extends Activity {
         bundle = this.getIntent().getExtras();
         username = bundle.getString("user");
         password = bundle.getString("pass");
+
+
     }
 
     public void Write(View view){
-
-        String server="pop3.sem.tsinghua.edu.cn";//POP3服务器地址
-        String result;
+        write_send.setText("Pleasing waiting...");
+        String server="smtp.sem.tsinghua.edu.cn";//POP3服务器地址
         String input_string;
+        if ("".equals(write_receiver.getText()))
+            return;
+        if ("next".equals(write_receiver.getText()))
+        {
+            Intent intent = new Intent(this, MyListView4.class);
+            intent.putExtras(bundle);
+            startActivity(intent);
+            return;
+        }
+        if ("".equals(write_title.getText()))
+            return;
+        if ("".equals(write_content.getText()))
+            return;
+
         try
         {
-            Pop pop3Client=new Pop(server,110);
-            input_string = "USER "+username+"@sem.tsinghua.edu.cn";
-            result = pop3Client.input(input_string);
-            System.out.println(result);
-            input_string = "PASS "+password;
-            result = pop3Client.input(input_string);
-            System.out.println(result);
+            SMTP smtpClient = new SMTP(server, 25, username, password);
+            input_string = "HELO";
+            smtpClient.input(input_string);
+            input_string = "AUTH";
+            smtpClient.input(input_string);
+            input_string = "MAIL";
+            smtpClient.input(input_string);
+            input_string = "RCPT "+ write_receiver.getText();
+            smtpClient.input(input_string);
+            input_string = "SUBJ "+ write_title.getText();
+            smtpClient.input(input_string);
+            input_string = "DATA "+ write_content.getText();
+            smtpClient.input(input_string);
 
-
-
-            if ("SUCCESS".equals(result))
-            {
-
-                if ("SUCCESS".equals(result))
-                {
-                    Toast.makeText(getApplicationContext(), "Redirecting...",
-                            Toast.LENGTH_SHORT).show();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("user", username);
-                    bundle.putString("pass", password);
-                    Intent intent = new Intent(this, ReceiveDetailEmailActivity.class);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(), "Wrong Password",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-            else
-            {
-                System.out.println(result);
-                Toast.makeText(getApplicationContext(), "User NOT Existing",
-                        Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(getApplicationContext(), "Sent successfully",
+                    Toast.LENGTH_SHORT).show();
+            //Bundle bundle = new Bundle();
+            //bundle.putString("user", username);
+            //bundle.putString("pass", password);
+            Intent intent = new Intent(this, MyListView4.class);
+            intent.putExtras(bundle);
+            startActivity(intent);
         }
         catch (Exception e)
         {
             System.out.println("HERE!");
         }
-
-
-
-        Toast.makeText(getApplicationContext(), "Sent successfully",
-                Toast.LENGTH_SHORT).show();
-        Intent intent = new Intent(this, ReceiveDetailEmailActivity.class);
-        startActivity(intent);
     }
 
 }

@@ -2,4 +2,6 @@
 <resources>
     <color name="light_blue">#0000FF</color>
     <color name="purple">#660077</color>
+    <color name="purple_xiaohui">#6d157e</color>
+    <color name="blue_ziti">#00195e</color>
 </resources>

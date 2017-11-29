@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
+import java.util.Date;
 
 public class SMTP {
     private Socket socket = null;
@@ -31,7 +32,7 @@ public class SMTP {
         //smtpClient.sendMail();
     }*/
     /*构造函数*/
-    public SMTP(String server,int port,String user, String pass) throws UnknownHostException, IOException{
+    public SMTP(String server,int port, String user, String pass) throws UnknownHostException, IOException{
         try{
             socket=new Socket(server,port);//在新建socket的时候就已经与服务器建立了连接
             username = user+"@sem.tsinghua.edu.cn";
@@ -91,10 +92,22 @@ public class SMTP {
                 temp_s = encoding.encode("UTF-8", subject);
                 content = content + "Subject: =?UTF-8?B?"+temp_s+"?=\n";
                 content = content + "MIME-Version: 1.0\n";
+                //content = content + "Date: \n";
+                Date date = new Date();
+                content = content + "Date: "+ date.toString()+"\n";
+                content = content + "Content-Type: multipart/mixed;\n";
+                content = content + "\tboundary=\"=boundaryhere\"\n\n";
+                temp_s = encoding.encode("UTF-8","<html><body>"+user_input.substring(5)+"</body></html>");
+                content = content + "--=boundaryhere\n";
+                content = content + "Content-Type: text/html; charset=UTF-8\n";
+                content = content + "Content-Transfer-Encoding: base64\n\n";
+                content = content + temp_s+"\n";
+                content = content + "--=boundaryhere\n";
                 content = content + "Content-Type: text/plain; charset=UTF-8\n";
                 content = content + "Content-Transfer-Encoding: base64\n\n";
-                temp_s = encoding.encode("UTF-8", user_input.substring(5));
+                temp_s = encoding.encode("UTF-8",user_input.substring(5));
                 content = content + temp_s+"\n";
+                content = content + "--=boundaryhere--\n";
                 content = content + ".\n";
                 System.out.println(content);
                 send(content, in, out);
